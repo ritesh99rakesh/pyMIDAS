@@ -53,10 +53,14 @@ from midas import midas
 import pandas as pd
 
 # Load dataset
-data = pd.read_csv("dataset.csv", names=['src', 'dst', 'timestamp'])
+data = pd.read_csv("dataset.csv", names=['src', 'dst', 'timestamps'])
 
 # Anomaly Scores
-anomaly_scores = midas(data.src, data.dst, data.timestamp, 2, 769)
+anomaly_scores = midas(
+    data.src, data.dst, data.timestamps,
+    num_rows=2,
+    num_buckets=769
+)
 ```
 
 For more examples, refer to [examples](https://github.com/ritesh99rakesh/pyMIDAS/tree/master/example) folder of this repository.
@@ -75,8 +79,7 @@ For more examples, refer to [examples](https://github.com/ritesh99rakesh/pyMIDAS
 
 1.  [C++](https://github.com/bhatiasiddharth/MIDAS) by [Siddharth
     Bhatia](https://github.com/bhatiasiddharth)
-2.  [Rust](https://github.com/scooter-dangle/midas_rs) and
-    [Python](https://github.com/scooter-dangle/midas_rs/tree/master/python)
+2.  [Rust](https://github.com/scooter-dangle/midas_rs)
     by [Scott Steele](https://github.com/scooter-dangle)
 3.  [Ruby](https://github.com/ankane/midas) by [Andrew
     Kane](https://github.com/ankane)

@@ -16,26 +16,28 @@ def counts_to_anom(tot, cur, cur_t):
     return sqerr / cur_mean + sqerr / (cur_mean * max(1, cur_t - 1))
 
 
-def midas(src, dst, times, num_rows, num_buckets):
-    m = np.max(src)
+def midas(df, num_rows, num_buckets):
+    m = df.src.max()
     cur_count = Edgehash(num_rows, num_buckets, m)
     total_count = Edgehash(num_rows, num_buckets, m)
-    anom_score = np.zeros(src.shape[0])
-    cur_t = 1
-    for i in range(src.shape[0]):
-        if i == 0 or times[i] > cur_t:
-            cur_count.clear()
-            cur_t = times[i]
-
-        cur_src = src[i]
-        cur_dst = dst[i]
-        cur_count.insert(cur_src, cur_dst, 1)
-        total_count.insert(cur_src, cur_dst, 1)
-        cur_mean = total_count.get_count(cur_src, cur_dst) / cur_t
-        sqerr = np.power(cur_count.get_count(cur_src, cur_dst) - cur_mean, 2)
-        cur_score = 0 if cur_t == 1 else sqerr / cur_mean + sqerr / (cur_mean * (cur_t - 1))
-        cur_score = 0 if math.isnan(cur_score) else cur_score
-        anom_score[i] = cur_score
+    anom_score = []
+    
+    timestamp_keys =  df.groupby(["timestamp"]).groups.keys()
+    for timeframe in timestamp_keys:
+        cur_t = timeframe
+        curr_df = df.groupby(["timestamp"]).get_group(timeframe)
+        for row in curr_df.itertuples():
+            cur_src = row.src 
+            cur_dst = row.dst
+            cur_count.insert(cur_src, cur_dst, 1)
+            total_count.insert(cur_src, cur_dst, 1)
+            cur_mean = total_count.get_count(cur_src, cur_dst) / cur_t
+            sqerr = np.power(cur_count.get_count(cur_src, cur_dst) - cur_mean, 2)
+            cur_score = 0 if cur_t == 1 else sqerr / cur_mean + sqerr / (cur_mean * (cur_t - 1))
+            cur_score = 0 if math.isnan(cur_score) else cur_score
+            anom_score.append(cur_score)
+            
+        cur_count.clear()
 
     return anom_score
 

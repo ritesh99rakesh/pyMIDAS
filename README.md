@@ -57,7 +57,7 @@ data = pd.read_csv("dataset.csv", names=['src', 'dst', 'timestamps'])
 
 # Anomaly Scores
 anomaly_scores = midas(
-    data.src, data.dst, data.timestamps,
+    data,
     num_rows=2,
     num_buckets=769
 )

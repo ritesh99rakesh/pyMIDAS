@@ -53,7 +53,7 @@ from midas import midas
 import pandas as pd
 
 # Load dataset
-data = pd.read_csv("dataset.csv", names=['src', 'dst', 'timestamps'])
+data = pd.read_csv("dataset.csv", names=['src', 'dst', 'timestamp'])
 
 # Anomaly Scores
 anomaly_scores = midas(

@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+from tqdm import tqdm
 
 from midas.edgehash import Edgehash
 from midas.nodehash import Nodehash
@@ -15,6 +16,16 @@ def counts_to_anom(tot, cur, cur_t):
     sqerr = np.power(max(0, cur - cur_mean), 2)
     return sqerr / cur_mean + sqerr / (cur_mean * max(1, cur_t - 1))
 
+def getRowInfo(row, anom_score,cur_count,total_count,cur_t):
+    cur_src = int(row["src"]) 
+    cur_dst = int(row["dst"])
+    cur_count.insert(cur_src, cur_dst, 1)
+    total_count.insert(cur_src, cur_dst, 1)
+    cur_mean = total_count.get_count(cur_src, cur_dst) / cur_t
+    sqerr = np.power(cur_count.get_count(cur_src, cur_dst) - cur_mean, 2)
+    cur_score = 0 if cur_t == 1 else sqerr / cur_mean + sqerr / (cur_mean * (cur_t - 1))
+    cur_score = 0 if math.isnan(cur_score) else cur_score
+    anom_score.append(cur_score)
 
 def midas(df, num_rows, num_buckets):
     m = df.src.max()
@@ -23,22 +34,11 @@ def midas(df, num_rows, num_buckets):
     anom_score = []
     
     timestamp_keys =  df.groupby(["timestamp"]).groups.keys()
-    for timeframe in timestamp_keys:
+    for timeframe in tqdm(timestamp_keys):
         cur_t = timeframe
-        curr_df = df.groupby(["timestamp"]).get_group(timeframe)
-        for row in curr_df.itertuples():
-            cur_src = row.src 
-            cur_dst = row.dst
-            cur_count.insert(cur_src, cur_dst, 1)
-            total_count.insert(cur_src, cur_dst, 1)
-            cur_mean = total_count.get_count(cur_src, cur_dst) / cur_t
-            sqerr = np.power(cur_count.get_count(cur_src, cur_dst) - cur_mean, 2)
-            cur_score = 0 if cur_t == 1 else sqerr / cur_mean + sqerr / (cur_mean * (cur_t - 1))
-            cur_score = 0 if math.isnan(cur_score) else cur_score
-            anom_score.append(cur_score)
-            
+        curr_df = df.groupby(["timestamp"]).get_group(timeframe)        
+        curr_df.apply(lambda row: getRowInfo(row, anom_score,cur_count,total_count,cur_t), axis=1)
         cur_count.clear()
-
     return anom_score
 
 

@@ -33,10 +33,11 @@ def midas(df, num_rows, num_buckets):
     total_count = Edgehash(num_rows, num_buckets, m)
     anom_score = []
     
-    timestamp_keys =  df.groupby(["timestamp"]).groups.keys()
+    time_df = df.groupby(["timestamp"])
+    timestamp_keys =  time_df.groups.keys()
     for timeframe in tqdm(timestamp_keys):
         cur_t = timeframe
-        curr_df = df.groupby(["timestamp"]).get_group(timeframe)        
+        curr_df = time_df.get_group(timeframe)        
         curr_df.apply(lambda row: getRowInfo(row, anom_score,cur_count,total_count,cur_t), axis=1)
         cur_count.clear()
     return anom_score

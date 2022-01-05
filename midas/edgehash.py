@@ -6,8 +6,8 @@ class Edgehash:
         self.num_rows = r
         self.num_buckets = b
         self.m = m0
-        self.hash_a = np.random.randint(low=1, high=b, size=r)
-        self.hash_b = np.random.randint(low=0, high=b, size=r)
+        self.hash_a = np.random.randint(low=1, high=b, size=r, dtype=np.int64)
+        self.hash_b = np.random.randint(low=0, high=b, size=r, dtype=np.int64)
         self.count = np.zeros((self.num_rows, self.num_buckets))
 
     def hash(self, a, b, i):
